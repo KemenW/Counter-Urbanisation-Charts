@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canungra Managed Growth Strategy — Proposal Map</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; }
+
+  #header { padding: 14px 18px 10px; border-bottom: 1px solid #eee; }
+  #header h2 { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 3px; }
+  #header p { font-size: 12px; color: #666; line-height: 1.5; }
+
+  #map { width: 100%; height: 520px; }
+
+  #controls {
+    padding: 10px 18px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .ctrl-label { font-size: 11px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
+  .toggle-btn {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1.5px solid;
+    cursor: pointer;
+    background: transparent;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .toggle-btn.active { color: #fff; }
+
+  #legend {
+    padding: 10px 18px;
+    border-top: 1px solid #eee;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #444; }
+  .l-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid rgba(0,0,0,0.15); }
+  .l-line { width: 22px; height: 3px; border-radius: 1px; flex-shrink: 0; }
+  .l-box { width: 14px; height: 11px; border-radius: 2px; flex-shrink: 0; border: 1.5px solid rgba(0,0,0,0.2); }
+  .l-dash { width: 22px; height: 0; border-top: 2.5px dashed; flex-shrink: 0; }
+
+  #source { padding: 7px 18px 12px; font-size: 11px; color: #999; line-height: 1.6; border-top: 1px solid #f0f0f0; }
+
+  .leaflet-popup-content-wrapper { border-radius: 8px; box-shadow: 0 4px 18px rgba(0,0,0,0.14); }
+  .popup-title { font-size: 13px; font-weight: 600; color: #1a1a1a; margin-bottom: 5px; }
+  .popup-badge {
+    display: inline-block; font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 10px; margin-bottom: 7px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .popup-body { font-size: 12px; color: #444; line-height: 1.65; }
+  .popup-stat { margin-top: 7px; font-size: 11px; color: #888; border-top: 1px solid #eee; padding-top: 6px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h2>Canungra managed growth strategy — proposal map</h2>
+  <p>Interactive map showing all proposed interventions across economic, environmental, and social/traffic issues. Click any marker or zone for details. Use the layer toggles below to show/hide categories.</p>
+</div>
+
+<div id="controls">
+  <span class="ctrl-label">Layers:</span>
+  <button class="toggle-btn active" id="btn-infill" style="border-color:#27ae60;background:#27ae60;color:#fff;" onclick="toggleLayer('infill')">Infill zones</button>
+  <button class="toggle-btn active" id="btn-protect" style="border-color:#1a5276;background:#1a5276;color:#fff;" onclick="toggleLayer('protect')">Protection zones</button>
+  <button class="toggle-btn active" id="btn-traffic" style="border-color:#e67e22;background:#e67e22;color:#fff;" onclick="toggleLayer('traffic')">Traffic proposals</button>
+  <button class="toggle-btn active" id="btn-environ" style="border-color:#117a65;background:#117a65;color:#fff;" onclick="toggleLayer('environ')">Environmental proposals</button>
+  <button class="toggle-btn active" id="btn-housing" style="border-color:#c0392b;background:#c0392b;color:#fff;" onclick="toggleLayer('housing')">Housing pressure</button>
+  <button class="toggle-btn active" id="btn-transport" style="border-color:#2980b9;background:#2980b9;color:#fff;" onclick="toggleLayer('transport')">Transport corridors</button>
+</div>
+
+<div id="map"></div>
+
+<div id="legend">
+  <div class="legend-item"><div class="l-box" style="background:rgba(39,174,96,0.18);border-color:#27ae60;"></div>Infill first zone</div>
+  <div class="legend-item"><div class="l-box" style="background:rgba(26,81,118,0.13);border-color:#1a5276;"></div>Bushland protection</div>
+  <div class="legend-item"><div class="l-box" style="background:rgba(39,174,96,0.12);border-color:#117a65;"></div>Lamington NP</div>
+  <div class="legend-item"><div class="l-dash" style="border-color:#e74c3c;"></div>Proposed bypass</div>
+  <div class="legend-item"><div class="l-line" style="background:#2980b9;"></div>Bus corridor</div>
+  <div class="legend-item"><div class="l-line" style="background:#117a65;"></div>Koala corridor</div>
+  <div class="legend-item"><div class="l-dot" style="background:#e67e22;"></div>Traffic upgrade</div>
+  <div class="legend-item"><div class="l-dot" style="background:#27ae60;"></div>Infill opportunity</div>
+  <div class="legend-item"><div class="l-dot" style="background:#c0392b;"></div>Housing pressure</div>
+  <div class="legend-item"><div class="l-dot" style="background:#2980b9;"></div>Reference / town</div>
+</div>
+
+<div id="source">
+  Sources: Scenic Rim Regional Council development approvals 2021–2024; Canungra Times; primary traffic count data (Christie St / Appel St); Queensland SLATS 2022–23; Watergum Koala Project; Transport and Main Roads (TMR) Canungra traffic study 2022. Bypass alignment, bus corridor, and zone boundaries are indicative proposals based on documented planning discussions — not surveyed boundaries.
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const map = L.map('map', { center: [-28.03, 153.155], zoom: 13, scrollWheelZoom: false });
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors', maxZoom: 19
+}).addTo(map);
+
+map.on('focus', () => map.scrollWheelZoom.enable());
+map.on('blur', () => map.scrollWheelZoom.disable());
+
+const layers = { infill: [], protect: [], traffic: [], environ: [], housing: [], transport: [] };
+
+function mkIcon(color, size) {
+  size = size || 14;
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2.5px solid rgba(255,255,255,0.95);box-shadow:0 2px 6px rgba(0,0,0,0.28);"></div>`,
+    iconSize: [size, size], iconAnchor: [size/2, size/2]
+  });
+}
+
+function badge(bg, color, text) {
+  return `<span class="popup-badge" style="background:${bg};color:${color};">${text}</span>`;
+}
+
+function addMarker(lat, lng, layerKey, icon, title, badgeHtml, body, stat) {
+  const m = L.marker([lat, lng], { icon })
+    .bindPopup(`<div style="min-width:220px;max-width:280px;">
+      <div class="popup-title">${title}</div>
+      ${badgeHtml}
+      <div class="popup-body">${body}</div>
+      ${stat ? `<div class="popup-stat">${stat}</div>` : ''}
+    </div>`, { maxWidth: 290 });
+  layers[layerKey].push(m);
+  m.addTo(map);
+  return m;
+}
+
+function addPoly(coords, color, fillOpacity, layerKey, tooltip) {
+  const p = L.polygon(coords, {
+    color, weight: 1.8, fillColor: color, fillOpacity,
+    dashArray: layerKey === 'protect' ? '5,4' : null
+  }).bindTooltip(tooltip, { sticky: true });
+  layers[layerKey].push(p);
+  p.addTo(map);
+}
+
+function addLine(coords, color, weight, dash, layerKey, tooltip) {
+  const l = L.polyline(coords, {
+    color, weight, dashArray: dash
+  }).bindTooltip(tooltip, { sticky: true });
+  layers[layerKey].push(l);
+  l.addTo(map);
+}
+
+// ── ZONES ──────────────────────────────────────────────
+
+// Infill first zone — existing town footprint
+addPoly([
+  [-27.995, 153.150], [-27.995, 153.178],
+  [-28.010, 153.182], [-28.022, 153.178],
+  [-28.024, 153.158], [-28.016, 153.148],
+  [-28.005, 153.145]
+], '#27ae60', 0.13, 'infill', 'Infill first zone — direct all new residential development here');
+
+// Bushland protection zone — fringe between town and NP
+addPoly([
+  [-28.024, 153.135], [-28.024, 153.188],
+  [-28.070, 153.192], [-28.085, 153.165],
+  [-28.075, 153.128], [-28.050, 153.120]
+], '#1a5276', 0.11, 'protect', 'Bushland protection zone — no new residential approvals');
+
+// Lamington NP boundary
+addPoly([
+  [-28.085, 153.060], [-28.085, 153.220],
+  [-28.250, 153.220], [-28.250, 153.060]
+], '#117a65', 0.10, 'protect', 'Lamington National Park — Gondwana Rainforests World Heritage Area');
+
+// ── TRANSPORT CORRIDORS ─────────────────────────────────
+
+// Bypass road — western loop around town
+addLine([
+  [-27.994, 153.152],
+  [-27.990, 153.140],
+  [-27.997, 153.128],
+  [-28.010, 153.122],
+  [-28.022, 153.128],
+  [-28.030, 153.140],
+  [-28.028, 153.155]
+], '#e74c3c', 3.5, '9,5', 'transport', 'Proposed bypass road — diverts through-traffic away from Christie Street');
+
+// Bus corridor — Canungra to Nerang
+addLine([
+  [-28.0195, 153.1652],
+  [-28.005, 153.175],
+  [-27.985, 153.195],
+  [-27.960, 153.215],
+  [-27.940, 153.240],
+  [-27.920, 153.270]
+], '#2980b9', 3, '6,3', 'transport', 'Proposed bus corridor — Canungra to Nerang train station (Translink extension)');
+
+// Koala wildlife corridor
+addLine([
+  [-28.028, 153.140],
+  [-28.048, 153.138],
+  [-28.068, 153.135],
+  [-28.090, 153.128],
+  [-28.115, 153.118]
+], '#117a65', 3, '4,4', 'environ', 'Koala movement corridor — no clearing buffer zone connecting Lamington NP to private land');
+
+// ── TRAFFIC MARKERS ────────────────────────────────────
+
+addMarker(-28.017, 153.165, 'traffic', mkIcon('#e67e22', 15),
+  'Christie St / Kidston St — signalised crossing',
+  badge('#fdebd0','#784212','Traffic upgrade'),
+  'Primary data recorded <strong>12 illegal pedestrian crossings</strong> and zero legal crossings at this intersection in a single survey period. A signalised pedestrian crossing with kerb extensions and improved sightlines is the minimum intervention required. Average vehicle turn wait of <strong>15 seconds</strong> recorded — indicative of peak-hour congestion on a road network designed for a pre-counter-urbanisation population.',
+  '📍 Christie St / Kidston St intersection | Priority: high | Source: Primary traffic count data'
+);
+
+addMarker(-28.013, 153.165, 'traffic', mkIcon('#e67e22', 15),
+  'Christie St school frontage — traffic management zone',
+  badge('#fdebd0','#784212','Traffic upgrade'),
+  '<strong>129 vehicles</strong> recorded in a single count period at the school frontage, with zero buses and zero bicycles. A designated school zone with reduced speed limits (40km/h), kerb extensions, and a separated drop-off lane would reduce conflict between school traffic and through-traffic on Christie Street.',
+  '📍 Christie St school frontage | 129 vehicles, 22 pedestrian crossings | Source: Primary traffic count data'
+);
+
+addMarker(-28.015, 153.148, 'traffic', mkIcon('#e74c3c', 15),
+  'Bypass northern tie-in point',
+  badge('#fadbd8','#7b241c','Bypass route'),
+  'The northern entry point of the proposed bypass where diverted traffic rejoins the main road network north of the township, removing the need for through-traffic to traverse Christie Street entirely. The original bypass corridor was consumed by the Canungra Rise development approval — this western alignment is the alternative route now under discussion with TMR.',
+  '📍 Northern bypass tie-in | Ref: Scenic Rim Council / TMR bypass discussions 2024'
+);
+
+addMarker(-28.028, 153.156, 'traffic', mkIcon('#e74c3c', 15),
+  'Bypass southern tie-in point',
+  badge('#fadbd8','#7b241c','Bypass route'),
+  'Southern entry to the proposed western bypass alignment, connecting to Lamington National Park Road south of the township. The bypass would allow vehicles travelling between the Gold Coast hinterland and Brisbane to avoid the Christie Street bottleneck entirely, reducing through-traffic volumes which account for a significant share of the 52% traffic growth recorded between 2012 and 2022.',
+  '📍 Southern bypass tie-in | Traffic growth: +52% over 10 years | Source: TMR 2022'
+);
+
+// ── INFILL / HOUSING MARKERS ───────────────────────────
+
+addMarker(-28.0195, 153.1652, 'infill', mkIcon('#2980b9', 16),
+  'Canungra town centre — infill priority zone',
+  badge('#eaf4fb','#1a5276','Town centre'),
+  'The existing Christie Street commercial strip and surrounding cleared land represents the highest-priority infill opportunity. Medium-density housing — townhouses, duplexes, and above-shop dwellings — built within the existing sewerage and water network would add affordable dwelling supply without extending the town\'s ecological footprint. Residents within walking distance of Christie Street generate significantly fewer vehicle trips, directly reducing traffic pressure.',
+  '📍 Canungra CBD | Pop. 1,436 (2021) | Infill capacity est. 200–300 dwellings within existing footprint'
+);
+
+addMarker(-28.004, 153.162, 'housing', mkIcon('#c0392b', 15),
+  'Canungra Meadows — 117-lot fringe subdivision',
+  badge('#fadbd8','#7b241c','Housing pressure'),
+  'A 117-lot subdivision on a 124-hectare fringe site sold for <strong>$9.8M in February 2022</strong>, driven entirely by counter-urbanisation demand. Under a managed growth strategy, this type of large-lot fringe development would be prohibited until the infill zone is exhausted, an affordable housing levy of 15% is met, and infrastructure triggers (bypass, pedestrian crossing) are delivered.',
+  '📍 Canungra Meadows, north of township | Approved 2022 | Source: Canungra Times'
+);
+
+addMarker(-28.002, 153.163, 'housing', mkIcon('#c0392b', 15),
+  'Canungra Rise — 12-lot koala habitat subdivision',
+  badge('#fadbd8','#7b241c','Housing pressure'),
+  'A 12-lot rural residential subdivision approved on <strong>10 hectares of mapped koala habitat</strong> on the town fringe in February 2022. This approval exemplifies the cumulative clearing problem — individually small, collectively significant. Under an infill-first policy this site would be designated as part of the bushland protection zone and removed from the residential development pipeline.',
+  '📍 Eastern fringe, Canungra | Approved Feb 2022 | Source: Fassifern Guardian'
+);
+
+addMarker(-28.002, 153.162, 'housing', mkIcon('#27ae60', 15),
+  'Finch Road — infill redevelopment opportunity',
+  badge('#d5f5e3','#1e8449','Infill opportunity'),
+  'The 23-hectare Finch Road retirement estate site is already cleared and within the existing town boundary — exactly the type of site that should receive development priority under an infill-first strategy. <strong>Future density should be directed to already-cleared sites like this</strong> rather than approving new fringe clearing. The site\'s existing clearing means no additional biodiversity loss and no new infrastructure extension is required.',
+  '📍 7 Finch Road, Canungra | 23ha already cleared | Source: Lifestyle Projects Canungra'
+);
+
+// ── ENVIRONMENTAL MARKERS ──────────────────────────────
+
+addMarker(-28.036, 153.120, 'environ', mkIcon('#117a65', 15),
+  'Sarabah corridor — conservation easement target',
+  badge('#d1f2eb','#0e6655','Environmental proposal'),
+  'Sarabah sits within the primary koala movement corridor connecting Lamington National Park upland habitat to lowland private land. Under the managed growth strategy, Council would offer <strong>rate rebates in exchange for voluntary conservation easements</strong> on private properties in this zone — legally preventing future clearing without compulsory acquisition. Priority for easement funding from the Queensland Government\'s Land Restoration Fund.',
+  '📍 Sarabah locality | Pop. 68 | Koala corridor priority zone'
+);
+
+addMarker(-28.019, 153.180, 'environ', mkIcon('#117a65', 15),
+  'Witheren — koala corridor restoration zone',
+  badge('#d1f2eb','#0e6655','Environmental proposal'),
+  'Witheren is an active koala habitat pressure zone where Watergum\'s Scenic Rim Koala Ecological and Community Project has already removed <strong>120 hectares of invasive weeds</strong> across five properties. The managed growth strategy would designate this zone as a mandatory biodiversity offset destination — developers who clear vegetation elsewhere in the Scenic Rim must fund 3:1 restoration works here before approvals are granted.',
+  '📍 Witheren locality | Pop. 581 | Source: Watergum Koala Project'
+);
+
+addMarker(-28.140, 153.127, 'environ', mkIcon('#117a65', 16),
+  'Lamington NP buffer — World Heritage boundary',
+  badge('#d1f2eb','#0e6655','Protected area'),
+  'Lamington National Park forms the southern ecological anchor of the Canungra hinterland and is part of the <strong>Gondwana Rainforests World Heritage Area</strong>. The managed growth strategy\'s infill-first policy would protect the undesignated private land buffer between the park boundary and the town fringe — land that currently has no legal protection and is progressively being consumed by counter-urbanisation-driven fringe development.',
+  '📍 Lamington NP northern boundary | UNESCO World Heritage listed | IUCN Category II'
+);
+
+addMarker(-28.0195, 153.127, 'transport', mkIcon('#2980b9', 14),
+  'Nerang bus corridor — Canungra origin',
+  badge('#eaf4fb','#1a5276','Transport proposal'),
+  'A scheduled Translink bus service from Canungra town centre to Nerang train station (~45 min) would provide the first public transport alternative for Canungra residents since counter-urbanisation began. The population growth driven by counter-urbanisation now provides sufficient demand to justify a service — particularly if infill development increases residential density within walking distance of the bus origin stop on Christie Street.',
+  '📍 Canungra bus origin — Christie Street | Proposed route: Canungra → Beechmont Rd → Nerang station'
+);
+
+// ── LAYER TOGGLE ──────────────────────────────────────
+
+const layerState = { infill: true, protect: true, traffic: true, environ: true, housing: true, transport: true };
+const btnColors = {
+  infill: '#27ae60', protect: '#1a5276', traffic: '#e67e22',
+  environ: '#117a65', housing: '#c0392b', transport: '#2980b9'
+};
+
+function toggleLayer(key) {
+  layerState[key] = !layerState[key];
+  const btn = document.getElementById('btn-' + key);
+  const color = btnColors[key];
+  if (layerState[key]) {
+    btn.style.background = color;
+    btn.style.color = '#fff';
+    btn.style.borderColor = color;
+    layers[key].forEach(l => l.addTo(map));
+  } else {
+    btn.style.background = 'transparent';
+    btn.style.color = color;
+    btn.style.borderColor = color;
+    layers[key].forEach(l => map.removeLayer(l));
+  }
+}
+</script>
+</body>
+</html>
