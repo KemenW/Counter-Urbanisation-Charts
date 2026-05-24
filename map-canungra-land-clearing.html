@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canungra Land Clearing & Deforestation — Counter-Urbanisation Impact</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; }
+
+  #header {
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid #eee;
+  }
+  #header h2 { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 3px; }
+  #header p { font-size: 12px; color: #666; line-height: 1.5; }
+
+  #map { width: 100%; height: 480px; }
+
+  #legend {
+    padding: 12px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    color: #444;
+  }
+  .legend-dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 2px solid rgba(0,0,0,0.15);
+    flex-shrink: 0;
+  }
+  .legend-box {
+    width: 14px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.2);
+  }
+
+  #source {
+    padding: 8px 20px 12px;
+    font-size: 11px;
+    color: #999;
+    line-height: 1.6;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  .leaflet-popup-content-wrapper {
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+  .popup-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 5px;
+  }
+  .popup-type {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+    margin-bottom: 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .popup-body {
+    font-size: 12px;
+    color: #444;
+    line-height: 1.6;
+  }
+  .popup-stat {
+    margin-top: 6px;
+    font-size: 11px;
+    color: #888;
+    border-top: 1px solid #eee;
+    padding-top: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <h2>Land clearing &amp; deforestation around Canungra — counter-urbanisation impact</h2>
+  <p>Residential developments approved or proposed since 2020, overlaid on protected areas and known koala habitat corridors. Click any marker for details.</p>
+</div>
+
+<div id="map"></div>
+
+<div id="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#e74c3c;"></div>Residential development (clearing)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e67e22;"></div>Koala habitat pressure zone</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#27ae60;"></div>Protected / national park</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2980b9;"></div>Town centre / reference point</div>
+  <div class="legend-item"><div class="legend-box" style="background:rgba(231,76,60,0.15);"></div>Estimated clearing zone</div>
+  <div class="legend-item"><div class="legend-box" style="background:rgba(39,174,96,0.2);"></div>Protected area boundary</div>
+</div>
+
+<div id="source">
+  Sources: Scenic Rim Regional Council development approvals 2021–2024; Canungra Times; Fassifern Guardian; Queensland SLATS 2022–23 (Dept. of Environment &amp; Science); Watergum Koala Ecological &amp; Community Project; Wikipedia locality coordinates. Note: clearing zone polygons are indicative extents based on reported development areas — they are not surveyed boundaries.
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const map = L.map('map', {
+  center: [-28.05, 153.13],
+  zoom: 12,
+  scrollWheelZoom: false
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors',
+  maxZoom: 18
+}).addTo(map);
+
+function makeIcon(color, size) {
+  size = size || 14;
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2.5px solid rgba(255,255,255,0.9);box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2]
+  });
+}
+
+function badge(color, bg, text) {
+  return `<span class="popup-type" style="background:${bg};color:${color};">${text}</span>`;
+}
+
+const developments = [
+  {
+    lat: -28.008,
+    lng: 153.156,
+    title: 'Canungra Meadows — 117-lot subdivision',
+    type: 'residential',
+    html: `${badge('#7b241c','#fadbd8','Residential clearing')}
+    <div class="popup-body">A 117-lot residential subdivision proposed on a 124-hectare site north of Canungra. The property sold for <strong>$9.8M in Feb 2022</strong> following the counter-urbanisation surge. Civil construction began 2023.<br><br>A 100-hectare lot containing core koala habitat was excluded from development, but surrounding land was cleared for residential lots averaging 748m².</div>
+    <div class="popup-stat">📍 North of Canungra township | Approved 2022 | Source: Canungra Times</div>`
+  },
+  {
+    lat: -28.018,
+    lng: 153.168,
+    title: 'Canungra Rise — 12-lot rural residential',
+    type: 'residential',
+    html: `${badge('#7b241c','#fadbd8','Koala habitat cleared')}
+    <div class="popup-body">A 12-lot rural residential subdivision approved on <strong>10 hectares of land containing mapped koala habitat</strong> on the outskirts of Canungra. Approved by Scenic Rim Council officers in February 2022 — directly driven by demand from urban migrants seeking rural-residential blocks.</div>
+    <div class="popup-stat">📍 Outskirts of Canungra | Approved Feb 2022 | Source: Fassifern Guardian</div>`
+  },
+  {
+    lat: -28.002,
+    lng: 153.162,
+    title: 'Finch Road — 188-dwelling retirement estate',
+    type: 'residential',
+    html: `${badge('#7b241c','#fadbd8','Residential development')}
+    <div class="popup-body">A 188-dwelling over-50s residential development approved on a <strong>23-hectare site on Finch Road</strong>. Approved August 2021, with concerns raised during assessment regarding koala habitat, bushfire risk, and traffic. The developed area was required to avoid koala habitat on the eastern half of the site, with over 11 hectares of bushland retained as a green corridor.</div>
+    <div class="popup-stat">📍 7 Finch Road, Canungra | Approved 2021 | Source: Scenic Rim Council / Jimboomba Times</div>`
+  },
+  {
+    lat: -27.998,
+    lng: 153.148,
+    title: 'Witheren rural-residential pressure zone',
+    type: 'koala',
+    html: `${badge('#784212','#fdebd0','Koala corridor pressure')}
+    <div class="popup-body">Witheren (population 581) sits immediately southeast of Canungra and has experienced growing rural-residential subdivision pressure. The locality sits within a mapped koala movement corridor connecting Lamington National Park to lowland habitat.<br><br>Watergum's Scenic Rim Koala Project has been active in this area, removing <strong>120 hectares of invasive weeds</strong> across five properties to maintain habitat connectivity.</div>
+    <div class="popup-stat">📍 Witheren locality | Source: Watergum / Wikipedia</div>`
+  },
+  {
+    lat: -28.037,
+    lng: 153.120,
+    title: 'Sarabah corridor — fragmentation risk',
+    type: 'koala',
+    html: `${badge('#784212','#fdebd0','Habitat fragmentation')}
+    <div class="popup-body">Sarabah (population 68) is a small locality 11km southwest of Canungra. As counter-urbanisation spreads demand further from the Canungra township, rural-residential development in localities like Sarabah fragments the vegetation corridor linking the McPherson Range to the Scenic Rim foothills.<br><br>Clearing in this zone removes vegetation over <strong>10m in height</strong> — the ecologically most valuable category, containing tree hollows and dense canopy critical for gliders, owls, and koalas.</div>
+    <div class="popup-stat">📍 Sarabah locality | Source: SLATS 2022–23 / Wikipedia</div>`
+  },
+  {
+    lat: -28.195,
+    lng: 153.127,
+    title: 'Lamington National Park boundary',
+    type: 'protected',
+    html: `${badge('#1a5276','#d6eaf8','World Heritage buffer')}
+    <div class="popup-body">Lamington National Park forms the southern boundary of the Canungra hinterland and is part of the <strong>Gondwana Rainforests of Australia World Heritage Area</strong>. It protects subtropical rainforest, Antarctic beech forests, and over 190 bird species.<br><br>Residential development north of the park boundary — driven by counter-urbanisation — is progressively narrowing the vegetated buffer between the park and the expanding Canungra urban footprint.</div>
+    <div class="popup-stat">📍 Lamington NP northern boundary | IUCN Category II National Park</div>`
+  },
+  {
+    lat: -28.0195,
+    lng: 153.1652,
+    title: 'Canungra town centre',
+    type: 'town',
+    html: `${badge('#1a5276','#eaf4fb','Reference point')}
+    <div class="popup-body">Canungra township — population <strong>1,436 (2021 census)</strong>. The town has become the epicentre of counter-urbanisation pressure from Brisbane (77km north) and the Gold Coast (approx. 45km northeast).<br><br>Since 2019, Canungra's median house price has risen from <strong>$480,000 to $1.10M</strong> — driven by urban migrants whose arrival has simultaneously inflated property values and accelerated land clearing on the town's fringe.</div>
+    <div class="popup-stat">📍 28°01′S 153°10′E | Pop. 1,436 | LGA: Scenic Rim Region</div>`
+  }
+];
+
+const clearingZones = [
+  {
+    coords: [[-27.998, 153.148], [-27.998, 153.168], [-28.015, 153.168], [-28.015, 153.148]],
+    color: '#e74c3c',
+    label: 'Canungra north clearing zone'
+  },
+  {
+    coords: [[-28.015, 153.158], [-28.015, 153.175], [-28.025, 153.175], [-28.025, 153.158]],
+    color: '#e67e22',
+    label: 'Witheren koala pressure zone'
+  }
+];
+
+const protectedZone = [
+  [-28.13, 153.05], [-28.13, 153.22], [-28.28, 153.22], [-28.28, 153.05]
+];
+
+L.polygon(protectedZone, {
+  color: '#27ae60',
+  weight: 1.5,
+  fillColor: '#27ae60',
+  fillOpacity: 0.12,
+  dashArray: '6,4'
+}).addTo(map).bindTooltip('Lamington National Park (approx. boundary)', { sticky: true });
+
+clearingZones.forEach(z => {
+  L.polygon(z.coords, {
+    color: z.color,
+    weight: 1,
+    fillColor: z.color,
+    fillOpacity: 0.18
+  }).addTo(map).bindTooltip(z.label, { sticky: true });
+});
+
+developments.forEach(d => {
+  const colors = {
+    residential: '#e74c3c',
+    koala: '#e67e22',
+    protected: '#27ae60',
+    town: '#2980b9'
+  };
+  const size = d.type === 'town' ? 16 : 14;
+  L.marker([d.lat, d.lng], { icon: makeIcon(colors[d.type], size) })
+    .addTo(map)
+    .bindPopup(`<div style="min-width:220px;max-width:280px;"><div class="popup-title">${d.title}</div>${d.html}</div>`, {
+      maxWidth: 290
+    });
+});
+
+map.on('focus', () => { map.scrollWheelZoom.enable(); });
+map.on('blur', () => { map.scrollWheelZoom.disable(); });
+</script>
+</body>
+</html>
