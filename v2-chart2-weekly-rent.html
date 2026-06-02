@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chart 2 — Median Weekly Rent 2025</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #ffffff; padding: 24px; }
+  h2 { font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #666; margin-bottom: 16px; line-height: 1.5; }
+  .stat-row { display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+  .stat { flex: 1; min-width: 120px; background: #f7f7f7; border-radius: 8px; padding: 10px 14px; }
+  .stat-label { font-size: 11px; color: #888; margin-bottom: 2px; }
+  .stat-val { font-size: 20px; font-weight: 600; }
+  .chart-wrap { position: relative; width: 100%; height: 280px; }
+  .source { font-size: 11px; color: #999; margin-top: 14px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<h2>Median weekly rent: Brisbane, Gold Coast &amp; Canungra (2025)</h2>
+<p class="subtitle">Rental vacancy rates at 1.0–1.1% across Brisbane and the Gold Coast — less than half the 2.6–3.5% considered a healthy market — drive renters outward toward Canungra.</p>
+
+<div class="stat-row">
+  <div class="stat">
+    <div class="stat-label">Brisbane vacancy rate</div>
+    <div class="stat-val" style="color:#378ADD;">1.0%</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Gold Coast vacancy rate</div>
+    <div class="stat-val" style="color:#D85A30;">1.1%</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Healthy vacancy rate</div>
+    <div class="stat-val" style="color:#1D9E75;">2.6–3.5%</div>
+  </div>
+</div>
+
+<div class="chart-wrap">
+  <canvas id="chart2"></canvas>
+</div>
+
+<p class="source">Sources: Queensland Rental Affordability Index, National Shelter–SGS Economics (Nov 2025); CoreLogic Quarterly Rental Review Q3 2025; SQM Research; REIQ vacancy rate benchmark.</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+new Chart(document.getElementById('chart2'), {
+  type: 'bar',
+  data: {
+    labels: ['Brisbane', 'Gold Coast', 'Canungra'],
+    datasets: [{
+      label: 'Median weekly rent ($)',
+      data: [643, 780, 700],
+      backgroundColor: ['#378ADD', '#D85A30', '#1D9E75'],
+      borderRadius: 5,
+      borderSkipped: false
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: ctx => ' $' + ctx.parsed.y + ' per week' } }
+    },
+    scales: {
+      y: {
+        min: 540,
+        title: {
+          display: true,
+          text: 'Median weekly rent (AUD per week)',
+          font: { size: 12, weight: '500' },
+          color: '#555'
+        },
+        ticks: { callback: v => '$' + v, font: { size: 11 } },
+        grid: { color: 'rgba(0,0,0,0.07)' }
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Location',
+          font: { size: 12, weight: '500' },
+          color: '#555'
+        },
+        ticks: { font: { size: 13, weight: '500' } },
+        grid: { display: false }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
