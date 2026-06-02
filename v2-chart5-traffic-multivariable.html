@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chart 5 — Canungra Traffic Count Multivariable</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #ffffff; padding: 20px; }
+  h2 { font-size: 15px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: #666; margin-bottom: 14px; line-height: 1.5; }
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(115px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .stat { background: #f7f7f7; border-radius: 8px; padding: 9px 13px; }
+  .stat-label { font-size: 11px; color: #888; margin-bottom: 2px; }
+  .stat-val { font-size: 19px; font-weight: 600; color: #1a1a1a; }
+  .callout { background: #fff4f4; border-left: 3px solid #E24B4A; padding: 9px 13px; border-radius: 0 6px 6px 0; margin-bottom: 14px; font-size: 12px; color: #444; line-height: 1.6; }
+  .callout strong { color: #c0392b; }
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #444; }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; }
+  .swatch-line { width: 22px; height: 3px; border-radius: 1px; }
+  .chart-wrap { position: relative; width: 100%; height: 350px; margin-bottom: 14px; }
+  .source { font-size: 11px; color: #999; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<h2>Canungra traffic count — multivariable analysis (primary survey data)</h2>
+<p class="subtitle">Vehicle volumes, vehicle types, pedestrian behaviour, and wait times across three survey locations on Christie Street and Appel Street — evidence of counter-urbanisation traffic pressure on a town of 1,436 people.</p>
+
+<div class="stat-row">
+  <div class="stat">
+    <div class="stat-label">Total vehicles counted</div>
+    <div class="stat-val">260</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Buses recorded</div>
+    <div class="stat-val" style="color:#E24B4A;">0</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Illegal crossings</div>
+    <div class="stat-val" style="color:#E24B4A;">12</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Avg wait — Kidston</div>
+    <div class="stat-val" style="color:#D85A30;">15 sec</div>
+  </div>
+</div>
+
+<div class="callout">
+  All 12 illegal pedestrian crossings occurred at the Christie / Kidston intersection — the same location with the highest vehicle volume, a 15-second average wait, and <strong>zero legal pedestrian crossings</strong>. Zero buses across all three locations confirms total car dependency — a direct social consequence of counter-urbanisation in a town without public transport.
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="swatch" style="background:#378ADD;"></div>Cars (incl. motorbike)</div>
+  <div class="legend-item"><div class="swatch" style="background:#888780;"></div>Trucks</div>
+  <div class="legend-item"><div class="swatch" style="background:#1D9E75;"></div>Legal pedestrian crossings</div>
+  <div class="legend-item"><div class="swatch" style="background:#E24B4A;"></div>Illegal pedestrian crossings</div>
+  <div class="legend-item"><div class="swatch-line" style="background:#D85A30;"></div>Avg wait time (sec, right axis)</div>
+</div>
+
+<div class="chart-wrap">
+  <canvas id="chart5"></canvas>
+</div>
+
+<p class="source">Source: Primary data — traffic count survey, Christie Street (school frontage), Christie Street / Kidston Street intersection, and Appel Street, Canungra. Traffic growth context: TMR data shows a 52% increase in traffic flows through Canungra over 10 years (2012–2022). Motorbike (1) included in cars category for visual clarity.</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+new Chart(document.getElementById('chart5'), {
+  data: {
+    labels: ['Christie St\n(school frontage)', 'Christie / Kidston\nintersection', 'Appel St'],
+    datasets: [
+      {
+        type: 'bar',
+        label: 'Cars',
+        data: [129, 116, 8],
+        backgroundColor: '#378ADD',
+        borderRadius: 4,
+        borderSkipped: false,
+        stack: 'vehicles',
+        order: 2
+      },
+      {
+        type: 'bar',
+        label: 'Trucks',
+        data: [6, 8, 1],
+        backgroundColor: '#888780',
+        borderRadius: 0,
+        borderSkipped: false,
+        stack: 'vehicles',
+        order: 2
+      },
+      {
+        type: 'bar',
+        label: 'Legal pedestrian crossings',
+        data: [22, 0, 13],
+        backgroundColor: '#1D9E75',
+        borderRadius: 4,
+        borderSkipped: false,
+        stack: 'pedestrians',
+        order: 2
+      },
+      {
+        type: 'bar',
+        label: 'Illegal pedestrian crossings',
+        data: [0, 12, 0],
+        backgroundColor: '#E24B4A',
+        borderRadius: 4,
+        borderSkipped: false,
+        stack: 'pedestrians',
+        order: 2
+      },
+      {
+        type: 'line',
+        label: 'Avg wait time (sec)',
+        data: [0, 15, 0],
+        borderColor: '#D85A30',
+        backgroundColor: 'rgba(216,90,48,0.08)',
+        borderWidth: 2.5,
+        pointRadius: 7,
+        pointBackgroundColor: '#D85A30',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        fill: false,
+        tension: 0.3,
+        yAxisID: 'y2',
+        order: 1,
+        borderDash: [6, 3]
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => {
+            if (ctx.dataset.label === 'Avg wait time (sec)') return ctx.parsed.y > 0 ? ' Avg wait: ' + ctx.parsed.y + ' sec' : null;
+            return ctx.parsed.y > 0 ? ' ' + ctx.dataset.label + ': ' + ctx.parsed.y : null;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Survey location',
+          font: { size: 12, weight: '500' },
+          color: '#555'
+        },
+        ticks: { font: { size: 11 } },
+        grid: { display: false }
+      },
+      y: {
+        stacked: false,
+        position: 'left',
+        title: {
+          display: true,
+          text: 'Vehicle and pedestrian count (number of observations)',
+          font: { size: 12, weight: '500' },
+          color: '#555'
+        },
+        ticks: { font: { size: 11 } },
+        grid: { color: 'rgba(0,0,0,0.07)' }
+      },
+      y2: {
+        position: 'right',
+        min: 0,
+        max: 25,
+        title: {
+          display: true,
+          text: 'Average vehicle wait time (seconds)',
+          font: { size: 12, weight: '500' },
+          color: '#D85A30'
+        },
+        ticks: {
+          font: { size: 11 },
+          color: '#D85A30',
+          callback: v => v + 's'
+        },
+        grid: { display: false }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
